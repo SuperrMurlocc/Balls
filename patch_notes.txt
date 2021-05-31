@@ -5,7 +5,11 @@
  -> const fps added
    - and variable MULT added for easy speed modification
 
- --- OPTIMIZATION UPDATE ---
+ --- CYAN DOT UPDATE ---
  -> death indicator added
    - when you are to die from next bad dot a small white dot will appear on your dot
  -> FPS changed to 60 per second
+ -> general code optimization
+   - smoother and faster feel
+ -> cyan dot added
+   - shield from bad dots for 7 next collisions
