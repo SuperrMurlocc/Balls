@@ -83,7 +83,7 @@ while running_intro:
                 running_intro = False
 
     screen.fill((0, 0, 0))
-    GAME_FONT.render_to(screen, (0, 0), f"YELLOW DOT UPDATE", (255, 255, 0))
+    GAME_FONT.render_to(screen, (0, 0), f"YELLOW BALL UPDATE", (255, 255, 0))
     GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 85, c.SCREEN_HEIGHT // 2 - 40), f"Balls", (255, 0, 0))
     GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 85, c.SCREEN_HEIGHT // 2 - 10), f"S - start", (0, 255, 255))
     GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 85, c.SCREEN_HEIGHT // 2 + 20), f"Q - quit", (0, 255, 255))
