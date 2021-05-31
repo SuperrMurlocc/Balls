@@ -82,9 +82,10 @@ while c.running:
             c.LEVEL_NUM += 1
 
             c.GOOD_DOT_NUM = c.LEVEL_NUM
-            c.BAD_DOT_NUM = (c.LEVEL_NUM - 1) * 2
+            c.BAD_DOT_NUM = (c.LEVEL_NUM - 1) * 2 - sum([int(DOT.name == "BAD") for DOT in c.DOTS])
 
             c.DOTS += [Dot("GOOD", 10, (0, 255, 0), 5) for _ in range(c.GOOD_DOT_NUM)]
+
             c.DOTS += [Dot("BAD", 15, (255, 0, 0), -10) for _ in range(c.BAD_DOT_NUM)]
 
         # CREATE BIG_ACTION DOT
