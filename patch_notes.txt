@@ -1,0 +1,11 @@
+ --- PURPLE DOT UPDATE ---
+ -> purple dot added
+   - purple dot spawns once every 40 game-ticks but not sooner than onc per level
+   - destroys 50 % of red dots
+ -> const fps added
+   - and variable MULT added for easy speed modification
+
+ --- OPTIMIZATION UPDATE ---
+ -> death indicator added
+   - when you are to die from next bad dot a small white dot will appear on your dot
+ -> FPS changed to 60 per second
