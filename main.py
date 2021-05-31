@@ -1,5 +1,5 @@
 import random
-
+from funcs import number
 import pygame.freetype
 from pygame.locals import (
     K_UP,
@@ -13,41 +13,15 @@ from pygame.locals import (
     K_s,
 )
 
+MULT = 1.0
 
-def distance(p1: list, p2: list) -> float:
-    return ((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2) ** .5
-
-
-num2words1 = {1: 'One', 2: 'Two', 3: 'Three', 4: 'Four', 5: 'Five', 6: 'Six', 7: 'Seven', 8: 'Eight', 9: 'Nine',
-              10: 'Ten', 11: 'Eleven', 12: 'Twelve', 13: 'Thirteen', 14: 'Fourteen', 15: 'Fifteen', 16: 'Sixteen',
-              17: 'Seventeen', 18: 'Eighteen', 19: 'Nineteen'}
-num2words2 = ['Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety']
-
-
-def number(Number):
-    if 0 <= Number <= 19:
-        return num2words1[Number]
-    elif 20 <= Number <= 99:
-        tens, remainder = divmod(Number, 10)
-        return num2words2[tens - 2] + '-' + num2words1[remainder] if remainder else num2words2[tens - 2]
-
-
-MULT = 0.85  # GAME SPEED
-
-FPS = 60  # FRAMES PER SECOND SETTING
-fpsClock = pygame.time.Clock()
-
-
-pygame.init()
-GAME_FONT = pygame.freetype.Font("PrequelDemo-ShadowItalic.otf", 24)
+FPS = 60
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
-screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
-pygame.display.set_caption("Balls")
-
-LEVEL_NUM = 1
+LEVEL_NUM = 0
+CURR_LEVEL = LEVEL_NUM
 
 GO_HORIZONTAL = 0
 GO_VERTICAL = 0
@@ -58,34 +32,141 @@ CIRCLE_R_SIZE = 25
 CIRCLE_POS_X = SCREEN_WIDTH // 2
 CIRCLE_POS_Y = SCREEN_HEIGHT // 2
 
-GOOD_DOT_NUM = 1
+GOOD_DOT_NUM = 0
 GOOD_DOT_R_SIZE = 10
-GOOD_DOT_POS = [[random.randint(GOOD_DOT_R_SIZE, SCREEN_WIDTH - GOOD_DOT_R_SIZE),
-                 random.randint(GOOD_DOT_R_SIZE, SCREEN_HEIGHT - GOOD_DOT_R_SIZE)] for _ in range(GOOD_DOT_NUM)]
-GOOD_DOT_MOVE = [[random.randint(0, 1), random.randint(-5, 5)] for _ in range(GOOD_DOT_NUM)]
 
-BAD_DOT_NUM = 1
+BAD_DOT_NUM = 0
 BAD_DOT_R_SIZE = 15
-BAD_DOT_POS = [[random.randint(BAD_DOT_R_SIZE, SCREEN_WIDTH - BAD_DOT_R_SIZE),
-                random.randint(BAD_DOT_R_SIZE, SCREEN_HEIGHT - BAD_DOT_R_SIZE)] for _ in range(BAD_DOT_NUM)]
-BAD_DOT_MOVE = [[random.randint(0, 1), random.randint(-7, 7)] for _ in range(BAD_DOT_NUM)]
 
 PURPLE_DOT_R_SIZE = 10
-PURPLE_DOT_POS = [random.randint(PURPLE_DOT_R_SIZE, SCREEN_WIDTH - PURPLE_DOT_R_SIZE),
-                  random.randint(PURPLE_DOT_R_SIZE, SCREEN_HEIGHT - PURPLE_DOT_R_SIZE)]
-PURPLE_DOT_ON = 0
+BIG_ACTION_DOT_ON = 0
 
 CHANGE_EVERY = int(25 * (1 / MULT))
 CHANGE_COUNTER = 0
 
 TICK = 1
-CURR_LEVEL = 1
 CURR_TICK = TICK
+BIG_ACTION = 0
+
+SHIELD = 0
 
 running = True
 running_game = True
 running_summ = True
 
+DOTS = []
+
+
+def distance(p1: (int, int), p2: (int, int)) -> float:
+    return ((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2) ** .5
+
+
+class Dot:
+    """
+    Class used to create a dot object.
+    """
+
+    def __init__(self, name: str, r_size: int, color: (int, int, int), size_change: int = 0, max_move_speed: int = 5, pos: (int, int) = None):
+        """
+        Initializes dot object.
+
+        :param name: Name of dot.
+        :param r_size: Radius size of dot.
+        :param color: Color of dot.
+        :param size_change: The amount by which our dot size is changed.
+        :param pos: Position of dot.
+        """
+        self.name = name
+        self.r_size = r_size
+        self.color = color
+        self.size_change = size_change
+        if pos:
+            self.pos_x = pos[0]
+            self.pos_y = pos[1]
+        else:
+            self.pos_x = random.randint(r_size, SCREEN_WIDTH - r_size)
+            self.pos_y = random.randint(r_size, SCREEN_HEIGHT - r_size)
+
+        self.max_move_speed = max_move_speed
+
+        self.move = random.randint(-max_move_speed, max_move_speed)
+        self.move_direction = random.randint(0, 1)
+
+    def disp(self) -> None:
+        """
+        Displays dot on screen.
+
+        :return: None
+        """
+        pygame.draw.circle(screen, self.color, (self.pos_x, self.pos_y), self.r_size)
+
+    def collision(self, pos_x, pos_y) -> bool:
+        """
+        Detect collison.
+
+        :return: True/False.
+        """
+        if distance((self.pos_x, self.pos_y), (pos_x, pos_y)) <= CIRCLE_R_SIZE + self.r_size:
+            return True
+        else:
+            return False
+
+    def determine_move(self):
+        self.move = random.randint(-self.max_move_speed, self.max_move_speed) * MULT
+        self.move_direction = random.randint(0, 1)
+
+    def move_pos(self):
+        if self.move_direction:
+            self.pos_x += self.move
+
+            if self.pos_x < self.r_size:
+                self.pos_x = self.r_size
+            if self.pos_x > SCREEN_WIDTH - self.r_size:
+                self.pos_x = SCREEN_WIDTH - self.r_size
+        else:
+            self.pos_y += self.move
+
+            if self.pos_y < self.r_size:
+                self.pos_y = self.r_size
+            if self.pos_y > SCREEN_HEIGHT - self.r_size:
+                self.pos_y = SCREEN_HEIGHT - self.r_size
+
+
+def set_starting_conditions() -> None:
+    global LEVEL_NUM, GO_HORIZONTAL, GO_VERTICAL, CIRCLE_POS_X, CIRCLE_POS_Y, GOOD_DOT_NUM, BAD_DOT_NUM, \
+        BIG_ACTION_DOT_ON, CHANGE_COUNTER, TICK, CURR_LEVEL, CURR_TICK, CIRCLE_R_SIZE, DOTS, BIG_ACTION, SHIELD
+    LEVEL_NUM = 0
+    CURR_LEVEL = LEVEL_NUM
+
+    GO_HORIZONTAL = 0
+    GO_VERTICAL = 0
+
+    CIRCLE_POS_X = SCREEN_WIDTH // 2
+    CIRCLE_POS_Y = SCREEN_HEIGHT // 2
+    CIRCLE_R_SIZE = 25
+    DOTS = []
+
+    GOOD_DOT_NUM = 0
+    BAD_DOT_NUM = 0
+    BIG_ACTION_DOT_ON = 0
+
+    CHANGE_COUNTER = 0
+    BIG_ACTION = 0
+
+    SHIELD = 0
+
+    TICK = 1
+    CURR_TICK = TICK
+
+
+# PYGAME INIT
+pygame.init()
+fpsClock = pygame.time.Clock()
+GAME_FONT = pygame.freetype.Font("PrequelDemo-ShadowItalic.otf", 24)
+screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
+pygame.display.set_caption("Balls")
+
+# STARTING SCREEN
 running_intro = True
 while running_intro:
     for event in pygame.event.get():
@@ -101,7 +182,7 @@ while running_intro:
                 running_intro = False
 
     screen.fill((0, 0, 0))
-    GAME_FONT.render_to(screen, (0, 0), f"PURPLE DOT UPDATE", (128, 0, 128))
+    GAME_FONT.render_to(screen, (0, 0), f"CYAN DOT UPDATE", (128, 0, 128))
     GAME_FONT.render_to(screen, (SCREEN_WIDTH // 2 - 85, SCREEN_HEIGHT // 2 - 40), f"Balls", (255, 0, 0))
     GAME_FONT.render_to(screen, (SCREEN_WIDTH // 2 - 85, SCREEN_HEIGHT // 2 - 10), f"S - start", (0, 255, 255))
     GAME_FONT.render_to(screen, (SCREEN_WIDTH // 2 - 85, SCREEN_HEIGHT // 2 + 20), f"Q - quit", (0, 255, 255))
@@ -109,7 +190,9 @@ while running_intro:
 
 while running:
 
+    # MAIN LOOP
     while running_game:
+        # EVENTS
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -136,9 +219,25 @@ while running:
                 if event.key == K_RIGHT:
                     GO_HORIZONTAL -= MOVE_SPEED * MULT
 
-        screen.fill((0, 0, 0))
-        GAME_FONT.render_to(screen, (0, 0), f"LEVEL {number(LEVEL_NUM)}", (0, 255, 255))
+        # DETERMINE LEVEL
+        if GOOD_DOT_NUM == 0:
+            LEVEL_NUM += 1
 
+            GOOD_DOT_NUM = LEVEL_NUM
+            BAD_DOT_NUM = (LEVEL_NUM - 1) * 2
+
+            DOTS = [Dot("GOOD", 10, (0, 255, 0), 5) for _ in range(GOOD_DOT_NUM)]
+            DOTS += [Dot("BAD", 15, (255, 0, 0), -10) for _ in range(BAD_DOT_NUM)]
+
+        # CREATE BIG_ACTION DOT
+        if TICK > CURR_TICK + 40 and not BIG_ACTION_DOT_ON and LEVEL_NUM != CURR_LEVEL:
+            BIG_ACTION_DOT_ON = 1
+            r = random.randint(0, 1)
+            big_name = ["PURPLE", "CYAN"][r]
+            big_color = [(128, 0, 128), (0, 255, 255)][r]
+            DOTS += [Dot(big_name, 10, big_color, 0, 0)]
+
+        # MOVE MYSELF
         CIRCLE_POS_X = CIRCLE_POS_X + GO_HORIZONTAL
         CIRCLE_POS_Y = CIRCLE_POS_Y + GO_VERTICAL
 
@@ -151,86 +250,57 @@ while running:
         if CIRCLE_POS_Y > SCREEN_HEIGHT - CIRCLE_R_SIZE:
             CIRCLE_POS_Y = SCREEN_HEIGHT - CIRCLE_R_SIZE
 
-        for i in range(len(GOOD_DOT_POS)):
-            GOOD_DOT_POS[i][GOOD_DOT_MOVE[i][0]] += GOOD_DOT_MOVE[i][1]
+        # MOVE DOTS
+        for DOT in DOTS:
+            DOT.move_pos()
 
-        for i in range(len(BAD_DOT_POS)):
-            BAD_DOT_POS[i][BAD_DOT_MOVE[i][0]] += BAD_DOT_MOVE[i][1]
+        # COLLISION ACTIONS
+        for DOT in DOTS:
+            if DOT.collision(CIRCLE_POS_X, CIRCLE_POS_Y):
+                CIRCLE_R_SIZE += DOT.size_change
 
-        for POS in GOOD_DOT_POS:
-            if POS[0] < GOOD_DOT_R_SIZE:
-                POS[0] = GOOD_DOT_R_SIZE
-            if POS[0] > SCREEN_WIDTH - GOOD_DOT_R_SIZE:
-                POS[0] = SCREEN_WIDTH - GOOD_DOT_R_SIZE
-            if POS[1] < GOOD_DOT_R_SIZE:
-                POS[1] = GOOD_DOT_R_SIZE
-            if POS[1] > SCREEN_HEIGHT - GOOD_DOT_R_SIZE:
-                POS[1] = SCREEN_HEIGHT - GOOD_DOT_R_SIZE
+                if DOT.name == "GOOD":
+                    GOOD_DOT_NUM -= 1
 
-            if distance(POS, [CIRCLE_POS_X, CIRCLE_POS_Y]) <= CIRCLE_R_SIZE + GOOD_DOT_R_SIZE:
-                del GOOD_DOT_POS[GOOD_DOT_POS.index(POS)]
-                CIRCLE_R_SIZE = CIRCLE_R_SIZE + 5
+                if DOT.name == "PURPLE":
+                    BIG_ACTION = 1
+                    BIG_ACTION_DOT_ON = 0
+                    for DOTT in DOTS:
+                        if DOTT.name == "BAD":
+                            if random.randint(0, 1):
+                                del DOTS[DOTS.index(DOTT)]
 
-        for POS in BAD_DOT_POS:
-            if POS[0] < BAD_DOT_R_SIZE:
-                POS[0] = BAD_DOT_R_SIZE
-            if POS[0] > SCREEN_WIDTH - BAD_DOT_R_SIZE:
-                POS[0] = SCREEN_WIDTH - BAD_DOT_R_SIZE
-            if POS[1] < BAD_DOT_R_SIZE:
-                POS[1] = BAD_DOT_R_SIZE
-            if POS[1] > SCREEN_HEIGHT - BAD_DOT_R_SIZE:
-                POS[1] = SCREEN_HEIGHT - BAD_DOT_R_SIZE
+                if DOT.name == "CYAN":
+                    BIG_ACTION = 1
+                    BIG_ACTION_DOT_ON = 0
+                    SHIELD = 7
 
-            if distance(POS, [CIRCLE_POS_X, CIRCLE_POS_Y]) <= CIRCLE_R_SIZE + BAD_DOT_R_SIZE:
-                del BAD_DOT_POS[BAD_DOT_POS.index(POS)]
-                CIRCLE_R_SIZE = CIRCLE_R_SIZE - 10
+                if DOT.name == "BAD" and SHIELD:
+                    SHIELD -= 1
+                    CIRCLE_R_SIZE -= DOT.size_change
 
-        if len(GOOD_DOT_POS) == 0:
-            LEVEL_NUM += 1
+                del DOTS[DOTS.index(DOT)]
 
-            GOOD_DOT_NUM = GOOD_DOT_NUM + 1
-            GOOD_DOT_POS = [[random.randint(GOOD_DOT_R_SIZE, SCREEN_WIDTH - GOOD_DOT_R_SIZE),
-                             random.randint(GOOD_DOT_R_SIZE, SCREEN_HEIGHT - GOOD_DOT_R_SIZE)] for _ in
-                            range(GOOD_DOT_NUM)]
-            GOOD_DOT_MOVE = [[random.randint(0, 1), random.randint(-5, 5) * MULT] for _ in range(GOOD_DOT_NUM)]
-
-            BAD_DOT_NUM = BAD_DOT_NUM + 2
-            BAD_DOT_POS = [[random.randint(BAD_DOT_R_SIZE, SCREEN_WIDTH - BAD_DOT_R_SIZE),
-                            random.randint(BAD_DOT_R_SIZE, SCREEN_HEIGHT - BAD_DOT_R_SIZE)] for _ in
-                           range(BAD_DOT_NUM)]
-            BAD_DOT_MOVE = [[random.randint(0, 1), random.randint(-5, 5) * MULT] for _ in range(BAD_DOT_NUM)]
-
-        if distance(PURPLE_DOT_POS, [CIRCLE_POS_X, CIRCLE_POS_Y]) <= PURPLE_DOT_R_SIZE + CIRCLE_R_SIZE and PURPLE_DOT_ON == 1:
-            PURPLE_DOT_ON = 0
-            for POS in BAD_DOT_POS:
-                if random.randint(0, 1):
-                    del BAD_DOT_POS[BAD_DOT_POS.index(POS)]
-
-        if CHANGE_COUNTER == CHANGE_EVERY:
-            GOOD_DOT_MOVE = [[random.randint(0, 1), random.randint(-5, 5) * MULT] for _ in range(GOOD_DOT_NUM)]
-            BAD_DOT_MOVE = [[random.randint(0, 1), random.randint(-5, 5) * MULT] for _ in range(BAD_DOT_NUM)]
-            TICK += 1
+        # TICK ACTIONS
         CHANGE_COUNTER = CHANGE_COUNTER % CHANGE_EVERY + 1
-
-        if TICK > CURR_TICK + 40 and PURPLE_DOT_ON == 0 and LEVEL_NUM != CURR_LEVEL:
-            PURPLE_DOT_POS = [random.randint(PURPLE_DOT_R_SIZE, SCREEN_WIDTH - PURPLE_DOT_R_SIZE),
-                              random.randint(PURPLE_DOT_R_SIZE, SCREEN_HEIGHT - PURPLE_DOT_R_SIZE)]
-            PURPLE_DOT_ON = 1
-            CURR_TICK = TICK
+        if CHANGE_COUNTER == CHANGE_EVERY:
+            TICK += 1
+            for DOT in DOTS:
+                DOT.determine_move()
+        if BIG_ACTION:
+            BIG_ACTION = 0
             CURR_LEVEL = LEVEL_NUM
+            CURR_TICK = TICK
 
-        for POS in GOOD_DOT_POS:
-            pygame.draw.circle(screen, (0, 255, 0), POS, GOOD_DOT_R_SIZE)
-
-        for POS in BAD_DOT_POS:
-            pygame.draw.circle(screen, (255, 0, 0), POS, BAD_DOT_R_SIZE)
-
-        if PURPLE_DOT_ON:
-            pygame.draw.circle(screen, (128, 0, 128), PURPLE_DOT_POS, PURPLE_DOT_R_SIZE)
+        # DISPLAY
+        for DOT in DOTS:
+            DOT.disp()
 
         pygame.draw.circle(screen, (0, 0, 255), (CIRCLE_POS_X, CIRCLE_POS_Y), CIRCLE_R_SIZE)
         if CIRCLE_R_SIZE <= 10:
-            pygame.draw.circle(screen, (255, 255, 255), (CIRCLE_POS_X, CIRCLE_POS_Y), CIRCLE_R_SIZE//2)
+            pygame.draw.circle(screen, (255, 255, 255), (CIRCLE_POS_X, CIRCLE_POS_Y), CIRCLE_R_SIZE // 2)
+        if SHIELD:
+            pygame.draw.circle(screen, (0, 255, 255), (CIRCLE_POS_X, CIRCLE_POS_Y), CIRCLE_R_SIZE, width=2)
 
         pygame.display.flip()
         if CIRCLE_R_SIZE <= 0:
@@ -238,6 +308,10 @@ while running:
             running_summ = True
         fpsClock.tick(FPS)
 
+        screen.fill((0, 0, 0))
+        GAME_FONT.render_to(screen, (0, 0), f"LEVEL {number(LEVEL_NUM)}", (0, 255, 255))
+
+    # RESTART SCREEN
     while running_summ:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -250,32 +324,9 @@ while running:
                     running_game = False
                     running_summ = False
                 if event.key == K_r:
-                    LEVEL_NUM = 1
-
-                    GO_HORIZONTAL = 0
-                    GO_VERTICAL = 0
-
-                    CIRCLE_R_SIZE = 25
-
-                    CIRCLE_POS_X = SCREEN_WIDTH // 2
-                    CIRCLE_POS_Y = SCREEN_HEIGHT // 2
-
-                    GOOD_DOT_NUM = 1
-                    GOOD_DOT_POS = [[random.randint(GOOD_DOT_R_SIZE, SCREEN_WIDTH - GOOD_DOT_R_SIZE),
-                                     random.randint(GOOD_DOT_R_SIZE, SCREEN_HEIGHT - GOOD_DOT_R_SIZE)] for _ in
-                                    range(GOOD_DOT_NUM)]
-                    GOOD_DOT_MOVE = [[random.randint(0, 1), random.randint(-5, 5)] for _ in range(GOOD_DOT_NUM)]
-
-                    BAD_DOT_NUM = 1
-                    BAD_DOT_POS = [[random.randint(BAD_DOT_R_SIZE, SCREEN_WIDTH - BAD_DOT_R_SIZE),
-                                    random.randint(BAD_DOT_R_SIZE, SCREEN_HEIGHT - BAD_DOT_R_SIZE)] for _ in
-                                   range(BAD_DOT_NUM)]
-                    BAD_DOT_MOVE = [[random.randint(0, 1), random.randint(-7, 7)] for _ in range(BAD_DOT_NUM)]
-
-                    CHANGE_COUNTER = 0
-                    PURPLE_DOT_ON = 0
-                    running_summ = False
+                    set_starting_conditions()
                     running_game = True
+                    running_summ = False
 
         screen.fill((0, 0, 0))
         GAME_FONT.render_to(screen, (0, 0), f"LEVEL {number(LEVEL_NUM)}", (0, 255, 255))
