@@ -11,16 +11,59 @@ from pygame.locals import (
     K_r,
     K_q,
     K_s,
+    K_p,
 )
 
-import consts as c
-from dot import Dot
-from funcs import number
+import dependencies.consts as c
+from dependencies.dot import Dot
+from dependencies.funcs import number
+
+
+# PAUSE SCREEN
+def pause_screen():
+    while True:
+        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 200, c.SCREEN_HEIGHT // 2 - 40),
+                            f"Game paused, P to unpause", (255, 0, 0))
+        pygame.display.flip()
+        p = 0
+        for event_p in pygame.event.get():
+            if event_p.type == pygame.QUIT:
+                if event_p.type == pygame.QUIT:
+                    c.running = False
+                    c.running_game = False
+                    c.running_summ = False
+                    p = 1
+                    break
+            if event_p.type == KEYDOWN:
+                if event_p.key == K_p:
+                    p = 1
+                    break
+                if event_p.key == K_DOWN:
+                    c.GO_VERTICAL += c.MOVE_SPEED * c.MULT
+                if event_p.key == K_UP:
+                    c.GO_VERTICAL -= c.MOVE_SPEED * c.MULT
+                if event_p.key == K_LEFT:
+                    c.GO_HORIZONTAL -= c.MOVE_SPEED * c.MULT
+                if event_p.key == K_RIGHT:
+                    c.GO_HORIZONTAL += c.MOVE_SPEED * c.MULT
+
+            if event_p.type == KEYUP:
+                if event_p.key == K_DOWN:
+                    c.GO_VERTICAL -= c.MOVE_SPEED * c.MULT
+                if event_p.key == K_UP:
+                    c.GO_VERTICAL += c.MOVE_SPEED * c.MULT
+                if event_p.key == K_LEFT:
+                    c.GO_HORIZONTAL += c.MOVE_SPEED * c.MULT
+                if event_p.key == K_RIGHT:
+                    c.GO_HORIZONTAL -= c.MOVE_SPEED * c.MULT
+        if p:
+            break
+
 
 # PYGAME INIT
 pygame.init()
 fpsClock = pygame.time.Clock()
-GAME_FONT = pygame.freetype.Font("PrequelDemo-ShadowItalic.otf", 24)
+GAME_FONT = pygame.freetype.Font("dependencies/PrequelDemo-ShadowItalic.otf", 24)
 screen = pygame.display.set_mode([c.SCREEN_WIDTH, c.SCREEN_HEIGHT])
 pygame.display.set_caption("Balls")
 
@@ -40,7 +83,7 @@ while running_intro:
                 running_intro = False
 
     screen.fill((0, 0, 0))
-    GAME_FONT.render_to(screen, (0, 0), f"CYAN DOT UPDATE", (0, 255, 255))
+    GAME_FONT.render_to(screen, (0, 0), f"YELLOW DOT UPDATE", (255, 255, 0))
     GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 85, c.SCREEN_HEIGHT // 2 - 40), f"Balls", (255, 0, 0))
     GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 85, c.SCREEN_HEIGHT // 2 - 10), f"S - start", (0, 255, 255))
     GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 85, c.SCREEN_HEIGHT // 2 + 20), f"Q - quit", (0, 255, 255))
@@ -66,6 +109,8 @@ while c.running:
                     c.GO_HORIZONTAL -= c.MOVE_SPEED * c.MULT
                 if event.key == K_RIGHT:
                     c.GO_HORIZONTAL += c.MOVE_SPEED * c.MULT
+                if event.key == K_p:
+                    pause_screen()
 
             if event.type == KEYUP:
                 if event.key == K_DOWN:
@@ -91,9 +136,9 @@ while c.running:
         # CREATE BIG_ACTION DOT
         if c.TICK > c.CURR_TICK + 40 and not c.BIG_ACTION_DOT_ON and c.LEVEL_NUM != c.CURR_LEVEL:
             c.BIG_ACTION_DOT_ON = 1
-            r = random.randint(0, 1)
-            big_name = ["PURPLE", "CYAN"][r]
-            big_color = [(128, 0, 128), (0, 255, 255)][r]
+            r = random.randint(0, 2)
+            big_name = ["PURPLE", "CYAN", "YELLOW"][r]
+            big_color = [(128, 0, 128), (0, 255, 255), (255, 255, 0)][r]
             c.DOTS += [Dot(big_name, 10, big_color, 0, 0)]
 
         # MOVE MYSELF
@@ -132,7 +177,26 @@ while c.running:
                 if DOT.name == "CYAN":
                     c.BIG_ACTION = 1
                     c.BIG_ACTION_DOT_ON = 0
-                    c.SHIELD = 7
+                    c.SHIELD += 6
+
+                if DOT.name == "YELLOW":
+                    c.BIG_ACTION = 1
+                    c.BIG_ACTION_DOT_ON = 0
+                    pygame.draw.rect(screen, (255, 255, 0), pygame.Rect(c.CIRCLE_POS_X - 5, 0, 20, c.SCREEN_HEIGHT))
+                    pygame.draw.rect(screen, (255, 255, 0), pygame.Rect(0, c.CIRCLE_POS_Y - 5, c.SCREEN_WIDTH, 20))
+                    pygame.display.flip()
+                    pygame.draw.rect(screen, (255, 255, 0), pygame.Rect(c.CIRCLE_POS_X - 5, 0, 20, c.SCREEN_HEIGHT))
+                    pygame.draw.rect(screen, (255, 255, 0), pygame.Rect(0, c.CIRCLE_POS_Y - 5, c.SCREEN_WIDTH, 20))
+                    for DOTT in c.DOTS:
+                        if DOTT.name != "YELLOW":
+                            if abs(DOTT.pos_x - c.CIRCLE_POS_X) <= 100:
+                                if DOTT.name == "GOOD":
+                                    c.GOOD_DOT_NUM -= 1
+                                del c.DOTS[c.DOTS.index(DOTT)]
+                            elif abs(DOTT.pos_y - c.CIRCLE_POS_Y) <= 100:
+                                if DOTT.name == "GOOD":
+                                    c.GOOD_DOT_NUM -= 1
+                                del c.DOTS[c.DOTS.index(DOTT)]
 
                 if DOT.name == "BAD" and c.SHIELD:
                     c.SHIELD -= 1

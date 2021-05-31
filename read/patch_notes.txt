@@ -1,0 +1,24 @@
+ --- PURPLE BALL UPDATE ---
+ -> purple ball added
+   - purple dot spawns once every 40 game-ticks but not sooner than onc per level
+   - destroys 50 % of red dots
+ -> const fps added
+   - and variable MULT added for easy speed modification
+
+ --- CYAN BALL UPDATE ---
+ -> death indicator added
+   - when you are to die from next bad dot a small white dot will appear on your dot
+ -> FPS changed to 60 per second
+ -> general code optimization
+   - smoother and faster feel
+ -> cyan ball added
+   - shield from bad dots for 7 next collisions
+ -> bug fixes and balance improved
+ -> manual added
+ -> pause option added (press p to pause and the p to resume)
+
+  --- YELLOW BALL UPDATE ---
+ -> yellow ball added
+   - creates a yellow cross that destroys everything in its path
+ -> bug fixes and balance improved
+   - shield counters from cyan ball decreased to 6 (from 7), but now can be stacked

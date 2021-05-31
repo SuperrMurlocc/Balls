@@ -1,6 +1,6 @@
 import random
 import pygame
-import consts as c
+import dependencies.consts as c
 
 
 def distance(p1: (int, int), p2: (int, int)) -> float:
