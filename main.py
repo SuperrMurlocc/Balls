@@ -45,6 +45,7 @@ def pause_screen():
 pygame.init()
 fpsClock = pygame.time.Clock()
 GAME_FONT = pygame.freetype.Font("dependencies/PrequelDemo-ShadowItalic.otf", 24)
+GAME_SMALL_FONT = pygame.freetype.Font("dependencies/PrequelDemo-ShadowItalic.otf", 18)
 screen = pygame.display.set_mode([c.SCREEN_WIDTH, c.SCREEN_HEIGHT])
 pygame.display.set_caption("Balls")
 
@@ -84,6 +85,12 @@ while c.running:
             if event.type == KEYDOWN:
                 if event.key == K_p:
                     pause_screen()
+                if event.key == K_q:
+                    c.running = False
+                    c.running_game = False
+                    c.running_summ = False
+                if event.key == K_r:
+                    c.set_starting_conditions()
 
         keys = pygame.key.get_pressed()
 
@@ -264,7 +271,8 @@ while c.running:
         fpsClock.tick(c.FPS)
 
         screen.fill((0, 0, 0))
-        GAME_FONT.render_to(screen, (0, 0), f"LEVEL {number(c.LEVEL_NUM)}", (0, 255, 255))
+        GAME_SMALL_FONT.render_to(screen, (0, 0), f"LEVEL {number(c.LEVEL_NUM)}", (0, 255, 255))
+        GAME_SMALL_FONT.render_to(screen, (c.SCREEN_WIDTH - 273, 0), f"P PAUSE    Q QUIT    R RESET", (0, 255, 255))
 
     # RESTART SCREEN
     while c.running_summ:
@@ -284,9 +292,10 @@ while c.running:
                     c.running_summ = False
 
         screen.fill((0, 0, 0))
-        GAME_FONT.render_to(screen, (0, 0), f"LEVEL {number(c.LEVEL_NUM)}", (0, 255, 255))
-        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 85, c.SCREEN_HEIGHT // 2 - 40), f"GAME OVER", (255, 0, 0))
-        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 85, c.SCREEN_HEIGHT // 2 - 10), f"R - restart",
+        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 100, c.SCREEN_HEIGHT // 2 - 60), f"GAME OVER", (255, 0, 0))
+        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 100, c.SCREEN_HEIGHT // 2 - 30),
+                            f"YOU GOT TO LEVEL {number(c.LEVEL_NUM)}", (0, 255, 255))
+        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 100, c.SCREEN_HEIGHT // 2 + 0), f"R - restart",
                             (0, 255, 255))
-        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 85, c.SCREEN_HEIGHT // 2 + 20), f"Q - quit", (0, 255, 255))
+        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 100, c.SCREEN_HEIGHT // 2 + 30), f"Q - quit", (0, 255, 255))
         pygame.display.flip()

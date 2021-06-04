@@ -31,3 +31,6 @@
    - explosion takes 25 from your radius away
  -> game windows resized (800x600 -> 900x700)
  -> manual updated, bugs fixed
+ -> minor GUI changes
+   - tinier letters while playing for more clarity
+   - you can now quit(Q) or reset(R) game at any moment

@@ -14,5 +14,8 @@ White stripe added:
    - explosion kills every ball except yours, but...
    - explosion takes 25 from your radius away
 
-Game windows resized (800x600 -> 900x700)</br>
-Manual updated, bugs fixed
+Game windows resized (800x600 -> 900x700)</br></br>
+Manual updated, bugs fixed </br></br>
+Minor GUI changes:
+   - tinier letters while playing for more clarity
+   - you can now quit(Q) or reset(R) game at any moment
