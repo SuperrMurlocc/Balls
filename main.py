@@ -7,7 +7,6 @@ from pygame.locals import (
     K_LEFT,
     K_RIGHT,
     KEYDOWN,
-    KEYUP,
     K_r,
     K_q,
     K_s,
@@ -38,24 +37,6 @@ def pause_screen():
                 if event_p.key == K_p:
                     p = 1
                     break
-                if event_p.key == K_DOWN:
-                    c.GO_VERTICAL += c.MOVE_SPEED * c.MULT
-                if event_p.key == K_UP:
-                    c.GO_VERTICAL -= c.MOVE_SPEED * c.MULT
-                if event_p.key == K_LEFT:
-                    c.GO_HORIZONTAL -= c.MOVE_SPEED * c.MULT
-                if event_p.key == K_RIGHT:
-                    c.GO_HORIZONTAL += c.MOVE_SPEED * c.MULT
-
-            if event_p.type == KEYUP:
-                if event_p.key == K_DOWN:
-                    c.GO_VERTICAL -= c.MOVE_SPEED * c.MULT
-                if event_p.key == K_UP:
-                    c.GO_VERTICAL += c.MOVE_SPEED * c.MULT
-                if event_p.key == K_LEFT:
-                    c.GO_HORIZONTAL += c.MOVE_SPEED * c.MULT
-                if event_p.key == K_RIGHT:
-                    c.GO_HORIZONTAL -= c.MOVE_SPEED * c.MULT
         if p:
             break
 
@@ -101,26 +82,27 @@ while c.running:
                 c.running_summ = False
 
             if event.type == KEYDOWN:
-                if event.key == K_DOWN:
-                    c.GO_VERTICAL += c.MOVE_SPEED * c.MULT
-                if event.key == K_UP:
-                    c.GO_VERTICAL -= c.MOVE_SPEED * c.MULT
-                if event.key == K_LEFT:
-                    c.GO_HORIZONTAL -= c.MOVE_SPEED * c.MULT
-                if event.key == K_RIGHT:
-                    c.GO_HORIZONTAL += c.MOVE_SPEED * c.MULT
                 if event.key == K_p:
                     pause_screen()
 
-            if event.type == KEYUP:
-                if event.key == K_DOWN:
-                    c.GO_VERTICAL -= c.MOVE_SPEED * c.MULT
-                if event.key == K_UP:
-                    c.GO_VERTICAL += c.MOVE_SPEED * c.MULT
-                if event.key == K_LEFT:
-                    c.GO_HORIZONTAL += c.MOVE_SPEED * c.MULT
-                if event.key == K_RIGHT:
-                    c.GO_HORIZONTAL -= c.MOVE_SPEED * c.MULT
+        keys = pygame.key.get_pressed()
+
+        if keys[K_DOWN] and keys[K_UP]:
+            c.GO_VERTICAL = 0
+        elif keys[K_DOWN]:
+            c.GO_VERTICAL = c.MOVE_SPEED * c.MULT
+        elif keys[K_UP]:
+            c.GO_VERTICAL = - c.MOVE_SPEED * c.MULT
+        else:
+            c.GO_VERTICAL = 0
+        if keys[K_LEFT] and keys[K_RIGHT]:
+            c.GO_HORIZONTAL = 0
+        elif keys[K_LEFT]:
+            c.GO_HORIZONTAL = - c.MOVE_SPEED * c.MULT
+        elif keys[K_RIGHT]:
+            c.GO_HORIZONTAL = c.MOVE_SPEED * c.MULT
+        else:
+            c.GO_HORIZONTAL = 0
 
         # DETERMINE LEVEL
         if c.GOOD_DOT_NUM == 0:
@@ -204,12 +186,62 @@ while c.running:
 
                 del c.DOTS[c.DOTS.index(DOT)]
 
+        if c.WHITE_STATUS > 0:
+            if c.WHITE_STATUS == 1:
+                c.WHITE_AXIS = random.randint(0, 1)
+                if c.WHITE_AXIS:
+                    r = random.randint(50, c.SCREEN_WIDTH - 50)
+                    c.WHITE_POS = [r, 0, 20, c.SCREEN_HEIGHT]
+                else:
+                    r = random.randint(50, c.SCREEN_HEIGHT - 50)
+                    c.WHITE_POS = [0, r, c.SCREEN_WIDTH, 20]
+            c.WHITE_STATUS = (c.WHITE_STATUS + 1) % int(c.CHANGE_EVERY * 1.5)
+            if c.WHITE_STATUS % 3:
+                pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(*c.WHITE_POS))
+            if c.WHITE_STATUS == 0:
+                if c.WHITE_AXIS:
+                    c.WHITE_POS[0] -= 30
+                    c.WHITE_POS[2] += 80
+                else:
+                    c.WHITE_POS[1] -= 30
+                    c.WHITE_POS[3] += 80
+
+                pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(*c.WHITE_POS))
+                pygame.display.flip()
+                pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(*c.WHITE_POS))
+                if c.WHITE_AXIS:
+                    if abs(c.CIRCLE_POS_X - c.WHITE_POS[0] - 50) <= 50 + c.CIRCLE_R_SIZE:
+                        c.CIRCLE_R_SIZE -= 25
+                    for DOT in c.DOTS:
+                        if abs(DOT.pos_x - c.WHITE_POS[0] - 50) <= 50 + DOT.r_size:
+                            if DOT.name == "GOOD":
+                                c.GOOD_DOT_NUM -= 1
+                            elif DOT.name == "BAD":
+                                pass
+                            else:
+                                c.BIG_ACTION_DOT_ON = 0
+                            del c.DOTS[c.DOTS.index(DOT)]
+                else:
+                    if abs(c.CIRCLE_POS_Y - c.WHITE_POS[1] - 50) <= 50 + c.CIRCLE_R_SIZE:
+                        c.CIRCLE_R_SIZE -= 25
+                    for DOT in c.DOTS:
+                        if abs(DOT.pos_y - c.WHITE_POS[1] - 50) <= 50 + DOT.r_size:
+                            if DOT.name == "GOOD":
+                                c.GOOD_DOT_NUM -= 1
+                            elif DOT.name == "BAD":
+                                pass
+                            else:
+                                c.BIG_ACTION_DOT_ON = 0
+                            del c.DOTS[c.DOTS.index(DOT)]
+
         # c.TICK ACTIONS
-        c.CHANGE_COUNTER = c.CHANGE_COUNTER % c.CHANGE_EVERY + 1
-        if c.CHANGE_COUNTER == c.CHANGE_EVERY:
+        c.CHANGE_COUNTER += 1
+        if c.CHANGE_COUNTER % c.CHANGE_EVERY == 0:
             c.TICK += 1
             for DOT in c.DOTS:
                 DOT.determine_move()
+        if c.CHANGE_COUNTER % c.WHITE_EVERY == 0:
+            c.WHITE_STATUS = 1
         if c.BIG_ACTION:
             c.BIG_ACTION = 0
             c.CURR_LEVEL = c.LEVEL_NUM
