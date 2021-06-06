@@ -28,11 +28,5 @@ Close the Terminal window.
 
 6. Enjoy playing Balls
 
-7. In order yo update game to newest version paste:
-
-Me=$(whoami)
-cd /Users/$Me/BediGames/Balls
-git pull
-
-in Terminal and press Enter.
+7. The game will check for updates everytime you start it.
 
