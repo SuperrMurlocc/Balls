@@ -16,6 +16,7 @@ from pygame.locals import (
 import dependencies.consts as c
 from dependencies.dot import Dot
 from dependencies.funcs import number
+from dependencies.stats import save_level, check_highscore
 
 
 # PAUSE SCREEN
@@ -48,6 +49,9 @@ GAME_FONT = pygame.freetype.Font("dependencies/PrequelDemo-ShadowItalic.otf", 24
 GAME_SMALL_FONT = pygame.freetype.Font("dependencies/PrequelDemo-ShadowItalic.otf", 18)
 screen = pygame.display.set_mode([c.SCREEN_WIDTH, c.SCREEN_HEIGHT])
 pygame.display.set_caption("Balls")
+HIGH, AVG = 0, 0
+programIcon = pygame.image.load('dependencies/icon.png')
+pygame.display.set_icon(programIcon)
 
 # STARTING SCREEN
 running_intro = True
@@ -121,6 +125,8 @@ while c.running:
             c.DOTS += [Dot("GOOD", 10, (0, 255, 0), 5) for _ in range(c.GOOD_DOT_NUM)]
 
             c.DOTS += [Dot("BAD", 15, (255, 0, 0), -10) for _ in range(c.BAD_DOT_NUM)]
+            if c.LEVEL_NUM >= 15:
+                c.DOTS += [Dot("PINK", 10, (236, 93, 183), 30, 15) for _ in range(random.randint(0, 1))]
 
         # CREATE BIG_ACTION DOT
         if c.TICK > c.CURR_TICK + 40 and not c.BIG_ACTION_DOT_ON and c.LEVEL_NUM != c.CURR_LEVEL:
@@ -223,10 +229,9 @@ while c.running:
                         if abs(DOT.pos_x - c.WHITE_POS[0] - 50) <= 50 + DOT.r_size:
                             if DOT.name == "GOOD":
                                 c.GOOD_DOT_NUM -= 1
-                            elif DOT.name == "BAD":
-                                pass
-                            else:
+                            elif DOT.name in ["PURPLE", "YELLOW", "CYAN"]:
                                 c.BIG_ACTION_DOT_ON = 0
+                                c.BIG_ACTION = 1
                             del c.DOTS[c.DOTS.index(DOT)]
                 else:
                     if abs(c.CIRCLE_POS_Y - c.WHITE_POS[1] - 50) <= 50 + c.CIRCLE_R_SIZE:
@@ -235,10 +240,9 @@ while c.running:
                         if abs(DOT.pos_y - c.WHITE_POS[1] - 50) <= 50 + DOT.r_size:
                             if DOT.name == "GOOD":
                                 c.GOOD_DOT_NUM -= 1
-                            elif DOT.name == "BAD":
-                                pass
-                            else:
+                            elif DOT.name in ["PURPLE", "YELLOW", "CYAN"]:
                                 c.BIG_ACTION_DOT_ON = 0
+                                c.BIG_ACTION = 1
                             del c.DOTS[c.DOTS.index(DOT)]
 
         # c.TICK ACTIONS
@@ -268,6 +272,8 @@ while c.running:
         if c.CIRCLE_R_SIZE <= 0:
             c.running_game = False
             c.running_summ = True
+            save_level(c.LEVEL_NUM)
+            HIGH, AVG = check_highscore()
         fpsClock.tick(c.FPS)
 
         screen.fill((0, 0, 0))
@@ -293,9 +299,11 @@ while c.running:
 
         screen.fill((0, 0, 0))
         GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 100, c.SCREEN_HEIGHT // 2 - 60), f"GAME OVER", (255, 0, 0))
-        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 100, c.SCREEN_HEIGHT // 2 - 30),
+        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 200, c.SCREEN_HEIGHT // 2 - 30),
                             f"YOU GOT TO LEVEL {number(c.LEVEL_NUM)}", (0, 255, 255))
         GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 100, c.SCREEN_HEIGHT // 2 + 0), f"R - restart",
                             (0, 255, 255))
-        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 100, c.SCREEN_HEIGHT // 2 + 30), f"Q - quit", (0, 255, 255))
+        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 80, c.SCREEN_HEIGHT // 2 + 30), f"Q - quit", (0, 255, 255))
+        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 200, c.SCREEN_HEIGHT // 2 + 60), f"HIGHSCORE : {number(HIGH)}", (0, 255, 255))
+        GAME_FONT.render_to(screen, (c.SCREEN_WIDTH // 2 - 210, c.SCREEN_HEIGHT // 2 + 90), f"AVERAGE SCORE : {number(AVG)}", (0, 255, 255))
         pygame.display.flip()
