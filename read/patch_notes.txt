@@ -34,3 +34,5 @@
  -> minor GUI changes
    - tinier letters while playing for more clarity
    - you can now quit(Q) or reset(R) game at any moment
+ -> added installation file for mac users
+ -> added pink dot that heals you, but is hard to catch
