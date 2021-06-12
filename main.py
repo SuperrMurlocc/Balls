@@ -101,32 +101,37 @@ while c.running:
         if keys[K_DOWN] and keys[K_UP]:
             c.GO_VERTICAL = 0
         elif keys[K_DOWN]:
-            c.GO_VERTICAL = c.MOVE_SPEED * c.MULT
+            c.GO_VERTICAL = c.MOVE_SPEED * c.MULT * c.INVERT
         elif keys[K_UP]:
-            c.GO_VERTICAL = - c.MOVE_SPEED * c.MULT
+            c.GO_VERTICAL = - c.MOVE_SPEED * c.MULT * c.INVERT
         else:
             c.GO_VERTICAL = 0
         if keys[K_LEFT] and keys[K_RIGHT]:
             c.GO_HORIZONTAL = 0
         elif keys[K_LEFT]:
-            c.GO_HORIZONTAL = - c.MOVE_SPEED * c.MULT
+            c.GO_HORIZONTAL = - c.MOVE_SPEED * c.MULT * c.INVERT
         elif keys[K_RIGHT]:
-            c.GO_HORIZONTAL = c.MOVE_SPEED * c.MULT
+            c.GO_HORIZONTAL = c.MOVE_SPEED * c.MULT * c.INVERT
         else:
             c.GO_HORIZONTAL = 0
+
+        RANDOM_GOD = random.randint(1, 100)
 
         # DETERMINE LEVEL
         if c.GOOD_DOT_NUM == 0:
             c.LEVEL_NUM += 1
 
             c.GOOD_DOT_NUM = c.LEVEL_NUM
-            c.BAD_DOT_NUM = (c.LEVEL_NUM - 1) * 2 - sum([int(DOT.name == "BAD") for DOT in c.DOTS])
+            c.BAD_DOT_NUM = (c.LEVEL_NUM - 1) * 2 - sum([int(DOT.name == "BAD") for DOT in c.DOTS]) - int(c.LEVEL_NUM**.5)
 
             c.DOTS += [Dot("GOOD", 10, (0, 255, 0), 5) for _ in range(c.GOOD_DOT_NUM)]
 
             c.DOTS += [Dot("BAD", 15, (255, 0, 0), -10) for _ in range(c.BAD_DOT_NUM)]
-            if c.LEVEL_NUM >= 15:
-                c.DOTS += [Dot("PINK", 10, (236, 93, 183), 30, 15) for _ in range(random.randint(0, 1))]
+            if c.LEVEL_NUM >= 9 and not RANDOM_GOD % 3:
+                c.DOTS += [Dot("ORANGE", 10, (255, 165, 0), 0, 5)]
+            if c.LEVEL_NUM >= 14 and not RANDOM_GOD % 3:
+                c.DOTS += [Dot("PINK", 10, (236, 93, 183), 30, 15)]
+
 
         # CREATE BIG_ACTION DOT
         if c.TICK > c.CURR_TICK + 40 and not c.BIG_ACTION_DOT_ON and c.LEVEL_NUM != c.CURR_LEVEL:
@@ -197,11 +202,20 @@ while c.running:
                     c.SHIELD -= 1
                     c.CIRCLE_R_SIZE -= DOT.size_change
 
+                if DOT.name == "ORANGE":
+                    c.INVERT_STATE = 1
+
                 del c.DOTS[c.DOTS.index(DOT)]
+
+        if c.INVERT_STATE:
+            c.INVERT = -1
+            c.INVERT_STATE = (c.INVERT_STATE + 1) % 155
+            if not c.INVERT_STATE:
+                c.INVERT = 1
 
         if c.WHITE_STATUS > 0:
             if c.WHITE_STATUS == 1:
-                c.WHITE_AXIS = random.randint(0, 1)
+                c.WHITE_AXIS = RANDOM_GOD % 2
                 if c.WHITE_AXIS:
                     r = random.randint(50, c.SCREEN_WIDTH - 50)
                     c.WHITE_POS = [r, 0, 20, c.SCREEN_HEIGHT]
