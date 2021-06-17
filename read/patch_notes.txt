@@ -36,3 +36,4 @@
    - you can now quit(Q) or reset(R) game at any moment
  -> added installation file for mac users
  -> added pink dot that heals you, but is hard to catch
+ -> Added orange dot that changes steering for roughly 2 seconds

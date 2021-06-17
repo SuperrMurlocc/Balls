@@ -1,5 +1,5 @@
 # Balls
-#### Requirments: [python3!](https://www.python.org/downloads/), [pygame!](https://www.pygame.org/wiki/GettingStarted)
+#### Requirments: [python3](https://www.python.org/downloads/), [pygame](https://www.pygame.org/wiki/GettingStarted)
 ## What is Balls?
 Balls is a simple game created in Python module **pygame**. </br>
 ![In-game screen](https://github.com/SuperrMurlocc/Balls/blob/master/read/screen.png)
@@ -21,5 +21,5 @@ Minor GUI changes:
    - tinier letters while playing for more clarity
    - you can now quit(Q) or reset(R) game at any moment </br>
 
-Added installation file for mac users </br>
 Added pink dot that heals you, but is hard to catch </br>
+Added orange dot that changes steering for roughly 2 seconds </br>
